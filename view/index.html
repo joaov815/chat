@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- <link rel="stylesheet" type="text/css" media="screen" href="main.css" /> -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+      * {
+        font-family: sans-serif;
+      }
+
+      .container {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      .message-box {
+        padding: 10px;
+        background-color: #eee;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        width: 70%;
+      }
+
+      .flex {
+        display: flex;
+      }
+
+      .me {
+        justify-content: flex-end;
+      }
+    </style>
+
+    <body>
+      <div id="app">
+        <h1>Chat</h1>
+        <div v-if="!isRegistered">
+          <p>Insira um nome para começar</p>
+          <form @submit.prevent="register">
+            <input type="text" v-model="nick" />
+            <button type="submit">Começar</button>
+          </form>
+        </div>
+        <div v-else>
+          <div class="container" v-if="messages.length">
+            <div v-for="message in messages">
+              <div :class="['flex', message.nick === nick ? 'me' : '']">
+                <div class="message-box">
+                  <span>{{ message.nick }}: </span>
+                  <p>{{ message.message }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <form @submit.prevent="sendMessage">
+            <textarea
+              type="text"
+              v-model="text"
+              @keyup.enter="sendMessage"
+            ></textarea>
+            <button type="submit">Enviar</button>
+          </form>
+        </div>
+      </div>
+    </body>
+
+    <script>
+      const BASE_API_URL = "192.168.15.2:3000/";
+      const BASE_API_HTTP_URL = `http://${BASE_API_URL}`;
+
+      const ws = new WebSocket(`ws://${BASE_API_URL}`);
+
+      const { createApp } = Vue;
+
+      createApp({
+        data() {
+          return {
+            nick: "",
+            text: "",
+            messages: [],
+            isRegistered: false,
+          };
+        },
+        methods: {
+          sendMessage() {
+            ws.send(JSON.stringify({ nick: this.nick, message: this.text }));
+            this.text = "";
+          },
+          async register() {
+            const { status } = await fetch(`${BASE_API_HTTP_URL}register`, {
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+              },
+              method: "POST",
+              body: JSON.stringify({ nick: this.nick }),
+            });
+            this.isRegistered = status === 200;
+          },
+        },
+        mounted() {
+          ws.addEventListener("message", ({ data }) => {
+            this.messages.push(JSON.parse(data));
+          });
+        },
+      }).mount("#app");
+    </script>
+  </head>
+  <body></body>
+</html>
