@@ -40,16 +40,16 @@
         <div v-if="!isRegistered">
           <p>Insira um nome para começar</p>
           <form @submit.prevent="register">
-            <input type="text" v-model="nick" />
+            <input type="text" v-model="nickname" />
             <button type="submit">Começar</button>
           </form>
         </div>
         <div v-else>
           <div class="container" v-if="messages.length">
             <div v-for="message in messages">
-              <div :class="['flex', message.nick === nick ? 'me' : '']">
+              <div :class="['flex', message.nickname === nickname ? 'me' : '']">
                 <div class="message-box">
-                  <span>{{ message.nick }}: </span>
+                  <span>{{ message.nickname }}: </span>
                   <p>{{ message.message }}</p>
                 </div>
               </div>
@@ -78,7 +78,7 @@
       createApp({
         data() {
           return {
-            nick: "",
+            nickname: "",
             text: "",
             messages: [],
             isRegistered: false,
@@ -86,7 +86,7 @@
         },
         methods: {
           sendMessage() {
-            ws.send(JSON.stringify({ nick: this.nick, message: this.text }));
+            ws.send(JSON.stringify({ nickname: this.nickname, message: this.text }));
             this.text = "";
           },
           async register() {
@@ -96,7 +96,7 @@
                 "Content-Type": "application/json",
               },
               method: "POST",
-              body: JSON.stringify({ nick: this.nick }),
+              body: JSON.stringify({ nickname: this.nickname }),
             });
             this.isRegistered = status === 200;
           },

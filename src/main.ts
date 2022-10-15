@@ -4,7 +4,7 @@ import { WebSocketServer } from "ws";
 import path from "path";
 
 class User {
-  constructor(public nick: string) {}
+  constructor(public nickname: string) {}
 }
 
 const users: User[] = [];
@@ -19,14 +19,13 @@ const server = http.createServer({}, (request, response) => {
         data += chunk;
       });
       request.on("end", () => {
-        const data2 = JSON.parse(data);
+        const parsedData = JSON.parse(data);
+        const user = new User(parsedData.nickname);
 
-        const user = new User(data2.nick);
-
-        if (users.some(({ nick }) => nick === user.nick)) {
+        if (users.some(({ nickname }) => nickname === user.nickname)) {
           response.statusCode = 409;
           response.end({
-            message: "Nick já usado, utilize outro!",
+            message: "nickname já usado, utilize outro!",
           });
         } else {
           users.push(user);
@@ -51,7 +50,7 @@ wsServer.on("connection", (ws) => {
   ws.addEventListener("message", ({ data }) => {
     const _data = JSON.parse(<any>data);
 
-    if (!users.some(({ nick }) => nick === _data.nick)) {
+    if (!users.some(({ nickname }) => nickname === _data.nickname)) {
       return;
     }
 
@@ -59,7 +58,7 @@ wsServer.on("connection", (ws) => {
       client.send(data);
     });
   });
-  console.log("nova conexao");
+  console.log("New connection");
 });
 
 server.listen(3000);

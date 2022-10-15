@@ -8,8 +8,8 @@ const fs_1 = __importDefault(require("fs"));
 const ws_1 = require("ws");
 const path_1 = __importDefault(require("path"));
 class User {
-    constructor(nick) {
-        this.nick = nick;
+    constructor(nickname) {
+        this.nickname = nickname;
     }
 }
 const users = [];
@@ -22,12 +22,13 @@ const server = http_1.default.createServer({}, (request, response) => {
                 data += chunk;
             });
             request.on("end", () => {
-                const data2 = JSON.parse(data);
-                const user = new User(data2.nick);
-                if (users.some(({ nick }) => nick === user.nick)) {
+                const parsedData = JSON.parse(data);
+                console.log(parsedData);
+                const user = new User(parsedData.nickname);
+                if (users.some(({ nickname }) => nickname === user.nickname)) {
                     response.statusCode = 409;
                     response.end({
-                        message: "Nick já usado, utilize outro!",
+                        message: "nickname já usado, utilize outro!",
                     });
                 }
                 else {
@@ -41,7 +42,6 @@ const server = http_1.default.createServer({}, (request, response) => {
     }
     else if (method === "GET" && url === "/") {
         const page = fs_1.default.readFileSync(path_1.default.resolve(__dirname, "../view/index.html"));
-        console.log(__dirname);
         response.setHeader("content-type", "text/html; charset=UTF-8");
         response.end(page);
     }
@@ -50,13 +50,13 @@ const wsServer = new ws_1.WebSocketServer({ server });
 wsServer.on("connection", (ws) => {
     ws.addEventListener("message", ({ data }) => {
         const _data = JSON.parse(data);
-        if (!users.some(({ nick }) => nick === _data.nick)) {
+        if (!users.some(({ nickname }) => nickname === _data.nickname)) {
             return;
         }
         wsServer.clients.forEach((client) => {
             client.send(data);
         });
     });
-    console.log("nova conexao");
+    console.log("New connection");
 });
 server.listen(3000);
