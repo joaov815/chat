@@ -1,7 +1,7 @@
-import http from "http";
 import fs from "fs";
-import { WebSocketServer } from "ws";
+import http from "http";
 import path from "path";
+import { WebSocketServer } from "ws";
 
 class User {
   constructor(public nickname: string) {}
